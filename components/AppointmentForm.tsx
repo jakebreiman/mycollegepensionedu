@@ -1,7 +1,7 @@
 "use client"
 
 import { useCallback, useState } from "react"
-import { useForm } from "react-hook-form"
+import { useForm, Controller } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useGoogleReCaptcha } from "react-google-recaptcha-v3"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
@@ -27,6 +27,7 @@ import {
   MEETING_TIMES,
   TIMEZONES,
 } from "@/lib/formOptions"
+import { DatePicker } from "./DatePicker"
 
 const UTM_KEYS = [
   "utm_source",
@@ -82,6 +83,7 @@ export function AppointmentForm({ onSuccess }: AppointmentFormProps) {
   const {
     register,
     handleSubmit,
+    control,
     formState: { errors, isSubmitting },
   } = useForm<AppointmentFormData>({
     resolver: zodResolver(appointmentSchema),
@@ -262,17 +264,20 @@ export function AppointmentForm({ onSuccess }: AppointmentFormProps) {
           </p>
 
           {/* Meeting Date + Time + Timezone */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div className="space-y-3">
             <div>
               <FieldLabel htmlFor="meetingDate" icon={faCalendarDays} required>Meeting Date</FieldLabel>
-              <input
-                id="meetingDate"
-                type="date"
-                {...register("meetingDate")}
-                className={inputClass}
+              <Controller
+                name="meetingDate"
+                control={control}
+                defaultValue=""
+                render={({ field }) => (
+                  <DatePicker value={field.value} onChange={field.onChange} />
+                )}
               />
               <FieldError message={errors.meetingDate?.message} />
             </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <FieldLabel htmlFor="meetingTime" icon={faClock} required>Time</FieldLabel>
               <select id="meetingTime" {...register("meetingTime")} className={selectClass}>
@@ -296,6 +301,7 @@ export function AppointmentForm({ onSuccess }: AppointmentFormProps) {
                 ))}
               </select>
               <FieldError message={errors.timezone?.message} />
+            </div>
             </div>
           </div>
 
