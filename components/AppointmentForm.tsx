@@ -108,14 +108,20 @@ export function AppointmentForm({ onSuccess }: AppointmentFormProps) {
 
       const payload = { ...data, ...utmParams, captchaToken }
 
-      // TODO: Meta Pixel — add fbq('track', 'Lead') on successful form submission
-      // TODO: CRM sync — POST payload to GoHighLevel or HubSpot webhook
-      // TODO: Confirmation email — trigger via CRM or transactional email provider
-      // TODO: Confirmation SMS — trigger via CRM or Twilio
-      // TODO: Calendar booking — replace Meeting Date/Time/Timezone fields with Calendly or GHL embed
+      const res = await fetch("/api/book", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      })
 
-      console.log("Appointment form submission payload:", payload)
-      await new Promise((r) => setTimeout(r, 500))
+      const result = await res.json()
+
+      if (!res.ok || !result.success) {
+        setFormError(
+          result.error || "There was a problem submitting your request. Please try again."
+        )
+        return
+      }
 
       onSuccess()
     } catch {
