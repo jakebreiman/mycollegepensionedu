@@ -78,7 +78,16 @@ interface AppointmentFormProps {
 
 export function AppointmentForm({ onSuccess }: AppointmentFormProps) {
   const [formError, setFormError] = useState<string | null>(null)
+  const [formStarted, setFormStarted] = useState(false)
   const { executeRecaptcha } = useGoogleReCaptcha()
+
+  const handleFormFocus = useCallback(() => {
+    if (!formStarted) {
+      setFormStarted(true)
+      const umami = (window as any).umami
+      if (umami) umami.track("form_start", { product_type: "college" })
+    }
+  }, [formStarted])
 
   const {
     register,
@@ -91,6 +100,9 @@ export function AppointmentForm({ onSuccess }: AppointmentFormProps) {
 
   async function onSubmit(data: AppointmentFormData) {
     setFormError(null)
+
+    const umami = (window as any).umami
+    if (umami) umami.track("form_submit", { product_type: "college" })
 
     if (!executeRecaptcha) {
       setFormError("reCAPTCHA not ready. Please try again.")
@@ -141,7 +153,7 @@ export function AppointmentForm({ onSuccess }: AppointmentFormProps) {
           Complete the form below to book your appointment.
         </p>
 
-        <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-4">
+        <form onSubmit={handleSubmit(onSubmit)} onFocusCapture={handleFormFocus} noValidate className="space-y-4">
           {/* Full Name */}
           <div>
             <FieldLabel htmlFor="fullName" icon={faUser} required>Full Name</FieldLabel>

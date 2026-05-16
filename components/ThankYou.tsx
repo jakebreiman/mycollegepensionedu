@@ -1,4 +1,21 @@
+"use client"
+
+import { useEffect } from "react"
+
 export function ThankYou() {
+  useEffect(() => {
+    const umami = (window as any).umami
+    if (umami) {
+      const utmSource = sessionStorage.getItem("utm_source") || undefined
+      const utmCampaign = sessionStorage.getItem("utm_campaign") || undefined
+      umami.track("booking_confirmed", {
+        product_type: "college",
+        utm_source: utmSource,
+        utm_campaign: utmCampaign,
+      })
+    }
+  }, [])
+
   return (
     <div className="max-w-[620px] mx-auto px-5 py-8">
       <div className="border border-[#c8d8ea] bg-[#f8fbfe] p-10 text-center">
