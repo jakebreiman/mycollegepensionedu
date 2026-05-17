@@ -45,10 +45,11 @@ export async function POST(request: NextRequest) {
   }
 
   // Build ISO datetime from date + time + timezone
+  const timezone = body.timezone || "America/New_York";
   let preferred_appointment: string;
   try {
     const { hours, minutes } = parseTime(body.meetingTime);
-    const offset = tzOffset(body.meetingDate, body.timezone);
+    const offset = tzOffset(body.meetingDate, timezone);
     preferred_appointment = `${body.meetingDate}T${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:00${offset}`;
   } catch (err) {
     return NextResponse.json(
@@ -57,28 +58,18 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  // Extra details → notes
-  const notes = [
-    body.departmentOffice ? `Department: ${body.departmentOffice}` : "",
-    body.jobTitle ? `Title: ${body.jobTitle}` : "",
-    body.personalEmail ? `Personal Email: ${body.personalEmail}` : "",
-    body.message || "",
-  ]
-    .filter(Boolean)
-    .join("\n");
-
   const payload: Record<string, unknown> = {
     contact_name: body.fullName,
     email: body.workEmail,
     contact_number: body.mobileNumber,
     organization: body.agencyEmployer,
     preferred_appointment,
-    timezone: body.timezone,
+    timezone,
     product_type: "college",
-    meeting_type: body.appointmentType === "phone" ? "Phone" : "Virtual",
+    meeting_type: "Virtual",
     state: body.state,
-    ...(notes && { notes }),
     ...(body.captchaToken && { captcha_token: body.captchaToken }),
+    // Forward UTM params
     ...(body.utm_source && { utm_source: body.utm_source }),
     ...(body.utm_medium && { utm_medium: body.utm_medium }),
     ...(body.utm_campaign && { utm_campaign: body.utm_campaign }),
